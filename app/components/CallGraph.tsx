@@ -9,15 +9,13 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  TooltipProps
+  
 } from 'recharts'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Conversation } from '@/data/sampleConversations'
 import { DateRange } from "@/components/ui/date-range-picker"
-import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
-
 type TimeFrame = 'hourly' | 'daily' | 'weekly' | 'monthly'
 type DataPoint = { date: number; total: number; label: string }
 
@@ -161,18 +159,14 @@ export function CallGraph({ conversations, dateRange }: CallGraphProps) {
                 />
                 <YAxis domain={[0, 'auto']} dx={-5} />
                 <ChartTooltip
-                  content={({ active, payload }: TooltipProps<ValueType, NameType>) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload as DataPoint;
-                      return (
-                        <div className="bg-background border rounded p-2 shadow-md">
-                          <p className="font-semibold">{data.label}</p>
-                          <p>Total Calls: {data.total}</p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
+                  content={({ active, payload }) => (
+                    active && payload?.length ? (
+                      <div className="bg-background border rounded p-2 shadow-md">
+                        <p className="font-semibold">{(payload[0].payload as DataPoint).label}</p>
+                        <p>Total Calls: {(payload[0].payload as DataPoint).total}</p>
+                      </div>
+                    ) : null
+                  )}
                 />
                 <Line
                   type="monotone"

@@ -19,6 +19,7 @@ export function Navbar() {
   return (
     <nav className="flex w-64 flex-col space-y-2 border-r bg-blue-50 p-4 pt-6">
       <div className="mb-6 flex justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src="https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/conversai.png" 
           alt="ConversAI Logo" 

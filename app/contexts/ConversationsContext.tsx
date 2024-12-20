@@ -3,6 +3,18 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Conversation } from '@/data/sampleConversations'
 
+interface Tool {
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+interface KnowledgeBase {
+  id: string;
+  name: string;
+  content: string;
+}
+
 interface AgentData {
   agent_id: string;
   name: string;
@@ -13,8 +25,8 @@ interface AgentData {
         llm: string;
         temperature: number;
         max_tokens: number;
-        tools: any[];
-        knowledge_base: any[];
+        tools: Tool[];
+        knowledge_base: KnowledgeBase[];
         custom_llm: null;
       };
       first_message: string;
