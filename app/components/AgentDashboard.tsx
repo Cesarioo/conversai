@@ -39,9 +39,10 @@ export function AgentDashboard() {
 
   const filteredConversations = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to) return conversations;
+    const { from, to } = dateRange;
     return conversations.filter(conv => {
       const convDate = new Date(conv.start_time_unix_secs * 1000)
-      return convDate >= dateRange.from && convDate <= dateRange.to
+      return convDate >= from && convDate <= to
     })
   }, [conversations, dateRange])
 
