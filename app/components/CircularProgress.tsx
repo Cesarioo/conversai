@@ -68,7 +68,6 @@ export function CircularProgress({
                     {(() => {
                       const [hours, minutes] = label.split(' ');
                       const hoursNum = parseInt(hours);
-                      const minutesNum = parseInt(minutes);
                       return (
                         <>
                           {hoursNum > 0 && <div className="text-2xl font-bold">{hours}</div>}

@@ -34,13 +34,20 @@ export function ChartContainer({
   )
 }
 
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: any[];
-  content: (props: { active?: boolean; payload?: any[] }) => React.ReactNode;
+interface TooltipData {
+  payload: {
+    value: number;
+    payload: Record<string, unknown>;
+  }[];
 }
 
-export const ChartTooltip = React.forwardRef<HTMLDivElement, ChartTooltipProps>((props, ref) => {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: TooltipData['payload'];
+  content: (props: { active?: boolean; payload?: TooltipData['payload'] }) => React.ReactNode;
+}
+
+export const ChartTooltip = React.forwardRef<HTMLDivElement, ChartTooltipProps>((props) => {
   return props.content(props);
 });
 ChartTooltip.displayName = "ChartTooltip"

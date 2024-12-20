@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const response = await fetch("https://api.elevenlabs.io/v1/convai/conversations?agent_id=L319wrQIMAX7Fr8UQn1N&page_size=100", {
       method: "GET",
