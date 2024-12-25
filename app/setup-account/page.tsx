@@ -3,7 +3,6 @@
 import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,32 +16,37 @@ function SetupAccountForm() {
   const [email, setEmail] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const getUser = async () => {
       const accessToken = searchParams.get('access_token')
-      if (accessToken) {
-        // Set the session first
-        const { error: sessionError } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: searchParams.get('refresh_token') || '',
+      
+      try {
+        // First try to get the user directly from the access token
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          }
         })
-        
-        if (sessionError) {
-          console.error('Session Error:', sessionError)
-          return
-        }
 
-        // Then get the user
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user?.email) {
-          setEmail(user.email)
+        if (response.ok) {
+          const userData = await response.json()
+          if (userData.email) {
+            setEmail(userData.email)
+          }
+        } else {
+          console.error('Failed to get user data')
         }
+      } catch (error) {
+        console.error('Error getting user:', error)
       }
     }
-    getUser()
-  }, [searchParams, supabase.auth])
+
+    if (searchParams.get('access_token')) {
+      getUser()
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
