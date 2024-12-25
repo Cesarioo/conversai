@@ -1,32 +1,12 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Joyride, { Step, CallBackProps } from 'react-joyride'
+import Joyride, { CallBackProps } from 'react-joyride'
 import { AgentDashboard } from './components/AgentDashboard'
 import ErrorBoundary from './components/ErrorBoundary'
 
-const tourSteps: Step[] = [
-  {
-    target: '.nav-dashboard',
-    content: 'Welcome to your dashboard! Here you can monitor all your agent activities, including call statistics and trends.',
-    disableBeacon: true,
-  },
-  {
-    target: '.nav-call-history',
-    content: 'View your complete call history, transcripts, and detailed analytics for each conversation.',
-  },
-  {
-    target: '.nav-agent-settings',
-    content: 'Configure your agent settings, including voice, language, and greeting message.',
-  },
-  {
-    target: '.nav-live-support',
-    content: 'Access live support from our team.',
-  }
-]
-
-export default function Home() {
+function HomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [runTour, setRunTour] = useState(false)
@@ -65,7 +45,6 @@ export default function Home() {
     <>
       {isReady && (
         <Joyride
-          steps={tourSteps}
           run={runTour}
           continuous
           showProgress
@@ -121,5 +100,13 @@ export default function Home() {
         </ErrorBoundary>
       </div>
     </>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   )
 }
