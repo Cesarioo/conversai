@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from 'sonner'
 
-export default function SetupAccount() {
+function SetupAccountForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -139,5 +140,37 @@ export default function SetupAccount() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Loading component
+function LoadingState() {
+  return (
+    <div className="container max-w-lg mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading...</CardTitle>
+          <CardDescription>
+            Please wait while we load your account setup
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Main component with Suspense
+export default function SetupAccount() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SetupAccountForm />
+    </Suspense>
   )
 } 
