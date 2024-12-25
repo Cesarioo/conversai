@@ -89,8 +89,8 @@ export function AgentDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-2 sm:space-y-0">
+      <h1 className="text-2xl font-bold mb-4 dashboard-header">Dashboard</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-2 sm:space-y-0 date-filters">
         <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Button onClick={() => handleDateRangeSelect('today')} variant="outline" size="sm" className="flex-grow sm:flex-grow-0">Today</Button>
           <Button onClick={() => handleDateRangeSelect('week')} variant="outline" size="sm" className="flex-grow sm:flex-grow-0">This week</Button>
@@ -105,7 +105,7 @@ export function AgentDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 row-span-2">
+        <Card className="p-6 row-span-2 total-calls-card">
           <CardHeader className="p-0">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <PhoneCall className="w-4 h-4" />
@@ -141,7 +141,7 @@ export function AgentDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="p-6 flex flex-col justify-center items-center">
+        <Card className="p-6 flex flex-col justify-center items-center duration-card">
           <CardHeader className="p-0 text-center w-full">
             <CardTitle className="text-sm font-medium flex items-center justify-center gap-2">
               <Clock className="w-4 h-4" />
@@ -164,7 +164,7 @@ export function AgentDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="p-6 flex flex-col justify-center items-center">
+        <Card className="p-6 flex flex-col justify-center items-center avg-duration-card">
           <CardHeader className="p-0 text-center w-full">
             <CardTitle className="text-sm font-medium flex items-center justify-center gap-2">
               <Timer className="w-4 h-4" />
@@ -180,10 +180,12 @@ export function AgentDashboard() {
         </Card>
       </div>
 
-      <CallGraph conversations={filteredConversations} dateRange={dateRange} />
+      <div className="call-graph">
+        <CallGraph conversations={filteredConversations} dateRange={dateRange} />
+      </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <Card className="p-6">
+        <Card className="p-6 heatmap">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Timer className="w-4 h-4" />

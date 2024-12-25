@@ -36,7 +36,8 @@ export function Navbar() {
                 "w-full justify-start transition-colors duration-200",
                 isActive 
                   ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "btn-ghost"
+                  : "btn-ghost",
+                `nav-${item.href.replace('/', '') || 'dashboard'}`
               )}
             >
               <item.icon className="mr-2 h-4 w-4" />

@@ -68,7 +68,7 @@ function SetupAccountForm() {
         throw new Error('No access token found')
       }
 
-      // Use the access token directly in the Authorization header
+      // First update the password
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
         method: 'PUT',
         headers: {
@@ -85,8 +85,26 @@ function SetupAccountForm() {
         throw new Error('Failed to update password')
       }
 
+      // Then update the app_users table
+      const updateAppUserResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/app_users`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          updated_password: true
+        })
+      })
+
+      if (!updateAppUserResponse.ok) {
+        console.error('Failed to update app_users table')
+      }
+
       toast.success('Password updated successfully')
-      router.push('/')
+      router.push('/onboarding')
     } catch (error) {
       console.error('Error:', error)
       toast.error('Error updating password')
