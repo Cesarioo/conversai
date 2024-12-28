@@ -1,33 +1,34 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Volume2, ArrowRight, ArrowLeft, Phone } from 'lucide-react'
 import { toast } from 'sonner'
+import businessPrompts from '@/data/promptBusiness.json'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 const businessTypes = [
   { id: 'restaurant', name: 'Restaurant', icon: '🍽️' },
   { id: 'hotel', name: 'Hotel', icon: '🏨' },
-  { id: 'spa', name: 'Spa & Wellness', icon: '💆' },
-  { id: 'retail', name: 'Retail Store', icon: '🛍️' },
-  { id: 'salon', name: 'Beauty Salon', icon: '💇' },
-]
-
-const languages = [
-  { id: 'en', name: 'English', flag: '🇬🇧' },
-  { id: 'fr', name: 'French', flag: '🇫🇷' },
-  { id: 'es', name: 'Spanish', flag: '🇪🇸' },
+  { id: 'tradesman', name: 'Tradesman (Electrical, Plumbing)', icon: '🔧' },
+  { id: 'medical', name: 'Medical Practice', icon: '⚕️' },
+  { id: 'beauty', name: 'Spa & Beauty Salon', icon: '💆' },
+  { id: 'government', name: 'City Hall & Local Government', icon: '🏛️' },
+  { id: 'ecommerce', name: 'E-commerce', icon: '🛒' },
+  { id: 'saas', name: 'SaaS (Customer Support)', icon: '💻' },
+  { id: 'petgrooming', name: 'Pet Grooming', icon: '🐕' },
 ]
 
 const voiceOptions = [
-  { id: "IHngRooVccHyPqB4uQkG", name: "Corentin", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/corentin_sample.mp3", language: "fr" },
-  { id: "gCux0vt1cPsEXPNSbchu", name: "Anna", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/anna_sample.mp3", language: "en" },
-  { id: "6vTyAgAT8PncODBcLjRf", name: "Claire", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/claire_sample.mp3", language: "fr" },
-  { id: "Qrl71rx6Yg8RvyPYRGCQ", name: "Guillaume", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/guillaume_sample.mp3", language: "fr" },
+  { id: "IHngRooVccHyPqB4uQkG", name: "Corentin", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/corentin_sample.mp3" },
+  { id: "gCux0vt1cPsEXPNSbchu", name: "Anna", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/anna_sample.mp3" },
+  { id: "6vTyAgAT8PncODBcLjRf", name: "Claire", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/claire_sample.mp3" },
+  { id: "Qrl71rx6Yg8RvyPYRGCQ", name: "Guillaume", audioFile: "https://pub-ec409c78c9ae4f9dad3ed1d5dbf6b44c.r2.dev/guillaume_sample.mp3" },
 ]
 
 const steps = [
@@ -53,27 +54,6 @@ const steps = [
     )
   },
   {
-    id: 'language',
-    title: "What's your primary business language?",
-    description: "Choose the main language for your agent.",
-    component: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {languages.map((lang) => (
-          <Card 
-            key={lang.id}
-            className={`cursor-pointer transition-all ${value === lang.id ? 'ring-2 ring-blue-500' : 'hover:shadow-lg'}`}
-            onClick={() => onChange(lang.id)}
-          >
-            <CardContent className="flex flex-col items-center justify-center p-6">
-              <span className="text-4xl mb-2">{lang.flag}</span>
-              <span className="text-sm font-medium">{lang.name}</span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  },
-  {
     id: 'voiceId',
     title: "Choose your agent's voice",
     description: "Select a voice that matches your brand.",
@@ -88,7 +68,6 @@ const steps = [
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="font-medium">{voice.name}</h3>
-                  <p className="text-sm text-gray-500">{languages.find(l => l.id === voice.language)?.name}</p>
                 </div>
                 <Button
                   type="button"
@@ -126,6 +105,58 @@ const steps = [
         onChange={(e) => onChange(e.target.value)}
         className="max-w-md"
       />
+    )
+  },
+  {
+    id: 'businessContext',
+    title: "Tell us more about your business",
+    description: "Provide details about your business that will help your AI agent better assist your customers. Minimum 100 characters required.",
+    component: ({ value, onChange, settings }: { 
+      value: string; 
+      onChange: (value: string) => void;
+      settings?: OnboardingSettings 
+    }) => {
+      const businessType = businessTypes.find(type => type.id === settings?.businessType)?.name || "";
+      let placeholder = "";
+      
+      if (businessType === "Restaurant") {
+        placeholder = "Example: We are a French bistro specializing in traditional dishes. Our opening hours are Monday to Saturday, 11:30 AM to 10 PM. We offer a lunch menu at €25 and dinner menu at €45. We have a wine cellar with over 200 references. We can accommodate private events up to 40 people. We have a terrace for summer dining. All our ingredients are sourced from local producers.";
+      }
+      
+      return (
+        <div className="space-y-4">
+          <Textarea
+            value={value}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="min-h-[200px]"
+          />
+          <div className="flex justify-between text-sm">
+            {value.length < 100 && (
+              <span className="text-red-500">
+                Please add {100 - value.length} more characters
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+  },
+  {
+    id: 'websiteUrl',
+    title: "Do you have a website?",
+    description: "If you have a website, enter the URL to help train your assistant with your business information.",
+    component: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+      <div className="space-y-4 max-w-md">
+        <Input
+          placeholder="https://www.example.com"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <p className="text-sm text-gray-500">
+          Leave empty if you dont have a website
+        </p>
+      </div>
     )
   },
   {
@@ -171,9 +202,10 @@ const steps = [
 
 interface OnboardingSettings {
   businessType: string;
-  language: string;
+  businessContext: string;
   voiceId: string;
   businessName: string;
+  websiteUrl: string;
   greeting: string;
   phone: string;
   name: string;
@@ -182,15 +214,45 @@ interface OnboardingSettings {
   maxTokens: number;
 }
 
+function PhoneDisplay() {
+  const [phone, setPhone] = useState<string>("")
+  const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    async function fetchPhone() {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) return
+
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('phone')
+        .eq('email', user.email)
+        .single()
+
+      if (!error && data) {
+        setPhone(data.phone)
+      }
+    }
+
+    fetchPhone()
+  }, [supabase])
+
+  return (
+    <p className="text-2xl font-semibold text-blue-500">{phone}</p>
+  )
+}
+
 export default function Onboarding() {
   const router = useRouter()
+  const supabase = createClientComponentClient()
   const [currentStep, setCurrentStep] = useState(0)
   const [showNumber, setShowNumber] = useState(false)
   const [settings, setSettings] = useState({
     businessType: "",
-    language: "",
+    businessContext: "",
     voiceId: "",
     businessName: "",
+    websiteUrl: "",
     greeting: "",
     phone: "",
     name: "",
@@ -204,6 +266,11 @@ export default function Onboarding() {
   const [isSuccess, setIsSuccess] = useState(false)
 
   const handleNext = () => {
+    if (currentStepData.id === 'businessContext' && settings.businessContext.length < 100) {
+      toast.error('Please provide at least 100 characters about your business');
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
@@ -232,15 +299,89 @@ export default function Onboarding() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
+
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        throw new Error('Not authenticated')
+      }
+
+      // Update the notification_phone in app_users table
+      const { error: updateError } = await supabase
+        .from('app_users')
+        .update({ notification_phone: settings.phone })
+        .eq('email', user.email)
+
+      if (updateError) {
+        console.error('Error updating phone number:', updateError)
+        throw new Error('Failed to update phone number')
+      }
+
+      const businessType = businessTypes.find(type => type.id === settings.businessType)?.name || "";
+      const businessPrompt = businessPrompts[businessType as keyof typeof businessPrompts]?.prompt || "";
+      const knowledgeBases = [];
+
+      // Create the text knowledge base entry if content exists
+      if (settings.businessContext.trim()) {
+        const formData = new FormData();
+        const blob = new Blob([settings.businessContext], { type: 'text/plain' });
+        formData.append('file', blob, 'knowledge_base.txt');
+
+        const kbResponse = await fetch('/api/knowledge-base/new', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!kbResponse.ok) {
+          throw new Error('Failed to create text knowledge base entry');
+        }
+
+        const kbData = await kbResponse.json();
+        knowledgeBases.push({
+          name: 'Business Information',
+          id: kbData.id,
+          type: 'file'
+        });
+      }
+
+      // Create the website knowledge base entry if URL exists
+      if (settings.websiteUrl.trim()) {
+        const urlFormData = new FormData();
+        urlFormData.append('url', settings.websiteUrl);
+
+        const websiteResponse = await fetch('/api/knowledge-base/new', {
+          method: 'POST',
+          body: urlFormData,
+        });
+
+        if (!websiteResponse.ok) {
+          throw new Error('Failed to create website knowledge base entry');
+        }
+
+        const websiteData = await websiteResponse.json();
+        knowledgeBases.push({
+          name: 'Website Content',
+          id: websiteData.id,
+          type: 'url'
+        });
+      }
+
       const payload = {
+        name: settings.businessName,
         conversation_config: {
           agent: {
+            prompt: {
+              prompt: businessPrompt,
+              llm: settings.llm,
+              temperature: settings.temperature,
+              max_tokens: settings.maxTokens,
+              knowledge_base: knowledgeBases
+            },
             first_message: settings.greeting,
-            language: settings.language,
+            website_url: settings.websiteUrl,
           },
           tts: {
-            voice_id: settings.voiceId,
+            voice_id: settings.voiceId || "IHngRooVccHyPqB4uQkG"
           }
         },
       }
@@ -256,7 +397,7 @@ export default function Onboarding() {
       })
 
       const data = await response.json()
-      
+
       if (!response.ok) {
         console.error('Update failed:', data)
         throw new Error('Failed to update agent settings')
@@ -278,12 +419,36 @@ export default function Onboarding() {
       
       if (key === 'businessName') {
         updates.name = value
-        updates.greeting = `Hello, this is ${prev.voiceId ? voiceOptions.find(v => v.id === prev.voiceId)?.name : value} from ${value}, how may I help?`
+        const voiceName = prev.voiceId ? voiceOptions.find(v => v.id === prev.voiceId)?.name : value;
+        const isRestaurant = businessTypes.find(type => type.id === prev.businessType)?.name === "Restaurant";
+        
+        if (isRestaurant) {
+          updates.greeting = `Bonjour, je suis ${voiceName} du restaurant ${value}. Comment puis-je vous aider ?`;
+        } else {
+          updates.greeting = `Hello, this is ${voiceName} from ${value}, how may I help?`;
+        }
       }
       
       if (key === 'voiceId') {
-        const voiceName = voiceOptions.find(v => v.id === value)?.name
-        updates.greeting = `Hello, this is ${voiceName} from ${prev.businessName}, how may I help?`
+        const voiceName = voiceOptions.find(v => v.id === value)?.name;
+        const isRestaurant = businessTypes.find(type => type.id === prev.businessType)?.name === "Restaurant";
+        
+        if (isRestaurant) {
+          updates.greeting = `Bonjour, je suis ${voiceName} du restaurant ${prev.businessName}. Comment puis-je vous aider ?`;
+        } else {
+          updates.greeting = `Bonjour, je suis ${voiceName} de ${prev.businessName}, comment puis-je vous aider ?`;
+        }
+      }
+
+      if (key === 'businessType') {
+        const voiceName = prev.voiceId ? voiceOptions.find(v => v.id === prev.voiceId)?.name : prev.name;
+        const isRestaurant = businessTypes.find(type => type.id === value)?.name === "Restaurant";
+        
+        if (isRestaurant) {
+          updates.greeting = `Bonjour, je suis ${voiceName} du restaurant ${prev.businessName}. Comment puis-je vous aider ?`;
+        } else {
+          updates.greeting = `Hello, this is ${voiceName} from ${prev.businessName}, how may I help?`;
+        }
       }
       
       return { ...prev, ...updates }
@@ -362,7 +527,7 @@ export default function Onboarding() {
               >
                 <div className="flex items-center justify-center space-x-3 mb-6">
                   <Phone className="h-6 w-6 text-blue-500" />
-                  <p className="text-2xl font-semibold text-blue-500">{settings.phone}</p>
+                  <PhoneDisplay />
                 </div>
                 <div className="space-y-3 text-center max-w-sm mx-auto">
                   <p className="text-gray-600">
@@ -439,7 +604,13 @@ export default function Onboarding() {
 
                   <Button
                     onClick={handleNext}
-                    disabled={!settings[currentStepData.id as keyof typeof settings]}
+                    disabled={
+                      currentStepData.id === 'businessContext' 
+                        ? settings.businessContext.length < 100 
+                        : currentStepData.id === 'websiteUrl'
+                        ? false
+                        : !settings[currentStepData.id as keyof typeof settings]
+                    }
                   >
                     {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
                     <ArrowRight className="ml-2 h-4 w-4" />

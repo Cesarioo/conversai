@@ -29,8 +29,9 @@ export default function Login() {
       if (error) throw error
 
       toast.success('Logged in successfully')
-      router.push('/')
+      router.push('/dashboard')
       router.refresh()
+      window.location.href = '/dashboard'
     } catch (error) {
       console.error('Error:', error)
       toast.error('Invalid login credentials')

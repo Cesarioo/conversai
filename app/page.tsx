@@ -1,12 +1,31 @@
 "use client"
 
 import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Button } from "@/components/ui/button"
+import { useRouter, useSearchParams } from "next/navigation"
 import Joyride, { CallBackProps } from 'react-joyride'
-import { AgentDashboard } from './components/AgentDashboard'
-import ErrorBoundary from './components/ErrorBoundary'
 
-function HomeContent() {
+const tourSteps = [
+  {
+    target: '.nav-dashboard',
+    content: 'Welcome to your dashboard! Here you can manage your AI agent and view call analytics.',
+    disableBeacon: true,
+  },
+  {
+    target: '.nav-call-history',
+    content: 'View your call history and analytics to track customer interactions.',
+  },
+  {
+    target: '.nav-agent-settings',
+    content: 'Configure your agent settings, including voice, language, and business information.',
+  },
+  {
+    target: '.nav-live-support',
+    content: 'Access live support features and manage real-time interactions.',
+  },
+]
+
+function WelcomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [runTour, setRunTour] = useState(false)
@@ -21,7 +40,7 @@ function HomeContent() {
           setIsReady(true)
           setRunTour(true)
         }
-      }, 1000)
+      }, 100)
     }
 
     // Check if we have an access token in the URL hash
@@ -45,6 +64,7 @@ function HomeContent() {
     <>
       {isReady && (
         <Joyride
+          steps={tourSteps}
           run={runTour}
           continuous
           showProgress
@@ -59,7 +79,7 @@ function HomeContent() {
             spotlight: {
               backgroundColor: 'transparent',
               borderRadius: '8px',
-              boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.5), 0 0 0 10000px rgba(0, 0, 0, 0.75)',
+              boxShadow: '0 0 0 10000px rgba(0, 0, 0, 0.75)',
             },
             tooltip: {
               padding: '20px',
@@ -94,19 +114,43 @@ function HomeContent() {
           }}
         />
       )}
-      <div className="container mx-auto py-10">
-        <ErrorBoundary>
-          <AgentDashboard />
-        </ErrorBoundary>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white p-4">
+        <div className="text-center space-y-6 max-w-2xl">
+          <h1 className="text-4xl font-bold tracking-tight">
+            Welcome to ConversAI
+          </h1>
+          <p className="text-xl text-gray-600">
+            Your AI-powered business communication solution. Let our intelligent agents handle customer inquiries while you focus on growing your business.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+            <Button
+              size="lg"
+              onClick={() => router.push('/onboarding')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Get Started
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push('/dashboard')}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+          <p className="text-sm text-gray-500 pt-4">
+            Already have an account? Head straight to your dashboard to manage your AI agent.
+          </p>
+        </div>
       </div>
     </>
   )
 }
 
-export default function Home() {
+export default function WelcomePage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <HomeContent />
+      <WelcomeContent />
     </Suspense>
   )
 }

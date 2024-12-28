@@ -3,31 +3,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Conversation } from '@/data/sampleConversations'
 
-interface Tool {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-}
 
-interface KnowledgeBase {
-  id: string;
-  name: string;
-  content: string;
-}
 
 interface AgentData {
   agent_id: string;
   name: string;
+  knowledgeBaseContent?: string;
   conversation_config: {
     agent: {
       prompt: {
-        prompt: string;
         llm: string;
         temperature: number;
         max_tokens: number;
-        tools: Tool[];
-        knowledge_base: KnowledgeBase[];
-        custom_llm: null;
+        knowledge_base?: Array<{
+          type: string;
+          name: string;
+          id: string;
+        }>;
       };
       first_message: string;
       language: string;

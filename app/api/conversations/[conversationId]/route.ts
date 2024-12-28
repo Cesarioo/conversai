@@ -19,7 +19,6 @@ export async function GET(
     }
 
     const body = await response.json();
-    console.log('Conversation details:', body);
 
     return NextResponse.json(body);
   } catch (error) {
