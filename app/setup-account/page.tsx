@@ -104,7 +104,7 @@ function SetupAccountForm() {
       }
 
       toast.success('Password updated successfully')
-      router.push('/onboarding')
+      router.push('/login?onBoarding=true')
     } catch (error) {
       console.error('Error:', error)
       toast.error('Error updating password')
