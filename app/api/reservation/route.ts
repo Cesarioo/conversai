@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import twilio from 'twilio';
+import { createClient } from '@supabase/supabase-js';
 
 // Twilio credentials
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-const twilioReceiveNumber = process.env.TWILIO_RECEIVE_NUMBER;
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
 // Initialize Twilio client
 const client = twilio(accountSid, authToken);
@@ -13,12 +19,34 @@ const client = twilio(accountSid, authToken);
 export async function POST(request: NextRequest) {
   try {
     // Check if Twilio credentials are set
-    if (!accountSid || !authToken || !twilioPhoneNumber || !twilioReceiveNumber) {
+    if (!accountSid || !authToken || !twilioPhoneNumber) {
       console.error('Twilio credentials or phone numbers are not properly set');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
-    const body = await request.json();
+    const twilioReceiveNumber = request.headers.get('agent_phone');
+    if (!twilioReceiveNumber) {
+      return NextResponse.json({ error: 'Missing agent_phone header' }, { status: 400 });
+    }
+
+    // Lookup notification phone number from Supabase
+    const { data: userData, error: userError } = await supabase
+      .from('app_users')
+      .select('notification_phone')
+      .eq('phone', twilioReceiveNumber)
+      .single();
+
+    if (userError || !userData) {
+      console.error('Failed to find restaurant notification number:', userError);
+      return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
+    }
+
+    const restaurantPhone = userData.notification_phone;
+    if (!restaurantPhone) {
+      return NextResponse.json({ error: 'Restaurant notification phone not set' }, { status: 400 });
+    }
+
+    const body = await request.json(); 
     const { name, persons, date, time } = body;
 
     if (!name || !persons || !date || !time) {
@@ -44,21 +72,31 @@ export async function POST(request: NextRequest) {
 
     console.log(`Latest call found from: ${callerNumber}`);
 
-    // Create and send SMS to the latest caller
-    console.log(`Sending SMS from ${twilioPhoneNumber} to ${callerNumber}`);
-    const message = await client.messages.create({
-      body: `Your Reservation for ${persons} person(s) at ${time} on ${date} has been confirmed. Thank you, ${name}!`,
+    // Create and send SMS to both the customer and restaurant
+    console.log(`Sending SMS to customer ${callerNumber} and restaurant ${restaurantPhone}`);
+    
+    // Send SMS to customer
+    const customerMessage = await client.messages.create({
+      body: `Votre reservation pour ${persons} personnes à ${time} le ${date} a été confirmée. Merci ${name}!`,
       from: twilioPhoneNumber,
       to: callerNumber
     });
 
-    console.log(`SMS sent successfully, SID: ${message.sid}`);
+    // Send SMS to restaurant
+    const restaurantMessage = await client.messages.create({
+      body: `Nouvelle reservation: ${name} pour ${persons} personnes à ${time} le ${date}. Numéro de téléphone du client: ${callerNumber}`,
+      from: twilioPhoneNumber,
+      to: restaurantPhone
+    });
+
+    console.log(`SMS sent successfully, Customer SID: ${customerMessage.sid}, Restaurant SID: ${restaurantMessage.sid}`);
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Reservation confirmed and SMS sent',
-      smsId: message.sid,
-      callerNumber: callerNumber // Include the caller number in the response for verification
+      message: 'Reservation confirmed and notifications sent',
+      customerSmsId: customerMessage.sid,
+      restaurantSmsId: restaurantMessage.sid,
+      callerNumber: callerNumber
     });
 
   } catch (error) {
