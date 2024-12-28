@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -17,7 +16,6 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const supabase = createClientComponentClient()
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,7 +39,13 @@ function LoginForm() {
       
       // Check if we should redirect to onboarding
       const shouldRedirectToOnboarding = searchParams.get('onBoarding') === 'true'
-      router.push(shouldRedirectToOnboarding ? '/onboarding' : '/dashboard')
+      
+      // Reload the page and then redirect
+      if (shouldRedirectToOnboarding) {
+        window.location.href = '/onboarding'
+      } else {
+        window.location.href = '/dashboard'
+      }
       
     } catch (error) {
       console.error('Error:', error)
