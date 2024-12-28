@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
-export default function Login() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -96,5 +96,36 @@ export default function Login() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Loading component
+function LoadingState() {
+  return (
+    <div className="container max-w-lg mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading...</CardTitle>
+          <CardDescription>
+            Please wait while we load the login form
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <LoginForm />
+    </Suspense>
   )
 } 
