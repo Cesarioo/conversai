@@ -404,6 +404,17 @@ export default function Onboarding() {
       }
 
       console.log('Update successful:', data)
+      
+      // Set authentication cookie
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        console.error('Error getting session:', sessionError)
+        throw new Error('Failed to get session')
+      }
+
+      // Set the cookie
+      document.cookie = `supabase-auth-token=${JSON.stringify([sessionData.session?.access_token, sessionData.session?.refresh_token])}; path=/; max-age=604800`
+      
       setIsSuccess(true)
     } catch (error) {
       console.error('Error:', error)

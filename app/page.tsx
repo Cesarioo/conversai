@@ -125,10 +125,10 @@ function WelcomeContent() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <Button
               size="lg"
-              onClick={() => router.push('/onboarding')}
+              onClick={() => router.push('/login')}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              Get Started
+              Login
             </Button>
             <Button
               size="lg"
@@ -139,7 +139,7 @@ function WelcomeContent() {
             </Button>
           </div>
           <p className="text-sm text-gray-500 pt-4">
-            Already have an account? Head straight to your dashboard to manage your AI agent.
+            Dont have an account? Please contact us at <a href="mailto:hello@conversai.ai" className="text-blue-500">hello@conversai.ai</a> to setup an account.
           </p>
         </div>
       </div>
