@@ -309,12 +309,15 @@ export default function Onboarding() {
       // Update the notification_phone in app_users table
       const { error: updateError } = await supabase
         .from('app_users')
-        .update({ notification_phone: settings.phone })
+        .update({ 
+          notification_phone: settings.phone,
+          website: settings.websiteUrl.trim() || null
+        })
         .eq('email', user.email)
 
       if (updateError) {
-        console.error('Error updating phone number:', updateError)
-        throw new Error('Failed to update phone number')
+        console.error('Error updating user data:', updateError)
+        throw new Error('Failed to update user data')
       }
 
       const businessType = businessTypes.find(type => type.id === settings.businessType)?.name || "";
