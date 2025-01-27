@@ -10,7 +10,6 @@ import {
   Stethoscope,
   PiggyBank,
   ArrowUpRight,
-  TypeIcon as type,
   type LucideIcon,
 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
