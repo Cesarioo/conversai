@@ -69,7 +69,7 @@ export function Testimonials() {
   const handlers = useSwipeable({
     onSwipedLeft: nextTestimonial,
     onSwipedRight: prevTestimonial,
-    preventDefaultTouchmoveEvent: true,
+    preventScrollOnSwipe: true,
     trackMouse: true,
   })
 
