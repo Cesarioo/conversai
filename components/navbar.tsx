@@ -34,7 +34,7 @@ const navigationItems: NavigationItem[] = [
                 icon: Utensils,
                 title: "Restaurant",
                 description: "Let the agent handle reservations and inquiries",
-                href: "#restaurant",
+                href: "/restaurants",
             },
             {
                 icon: Building,
@@ -53,7 +53,7 @@ const navigationItems: NavigationItem[] = [
                 icon: Stethoscope,
                 title: "Healthcare",
                 description: "Schedule appointments and answer patient queries",
-                href: "#healthcare",
+                href: "/medical-clinics",
             },
             {
                 icon: PiggyBank,
