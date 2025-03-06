@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { PhoneCall, CheckCircle } from "lucide-react";
 
 export function TryItNow() {
-    const [phone, setPhone] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState("");
 
@@ -15,23 +14,8 @@ export function TryItNow() {
         e.preventDefault();
         // Here you would typically handle the form submission
 
-        const response = await fetch("/api/slack", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ phone }),
-        });
-        const data = await response.json();
-        if (data.ok) {
-            setSubmitted(true);
-        } else {
-            setError(data.error);
-        }
-
         // Reset the form after a delay
         setTimeout(() => {
-            setPhone("");
             setSubmitted(false);
             setError("");
         }, 3000);
@@ -87,53 +71,16 @@ export function TryItNow() {
                                 delay: 0.2,
                             }}
                         >
-                            {submitted && (
-                                <div className="mb-4 p-4 bg-green-100 text-green-800 rounded-lg">
-                                    Your demo call has been scheduled. We will
-                                    contact you shortly.
+                            <div className="space-y-6">
+                                <h3 className="text-2xl font-semibold mb-4">
+                                    Get a Free Demo Call
+                                </h3>
+                                <div className="text-center">
+                                    <p className="text-2xl font-semibold text-primary-foreground">
+                                        +33159133582
+                                    </p>
                                 </div>
-                            )}
-                            {error && (
-                                <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
-                                    {error}
-                                </div>
-                            )}
-                            {!submitted && !error && (
-                                <form
-                                    onSubmit={handleSubmit}
-                                    className="space-y-6"
-                                >
-                                    <h3 className="text-2xl font-semibold mb-4">
-                                        Get a Free Demo Call
-                                    </h3>
-                                    <div className="relative">
-                                        <PhoneCall className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary-foreground/50" />
-                                        <Input
-                                            type="tel"
-                                            placeholder="Enter your phone number"
-                                            value={phone}
-                                            onChange={(e) =>
-                                                setPhone(e.target.value)
-                                            }
-                                            className="pl-10 bg-background/20 border-background/30 text-primary-foreground placeholder-primary-foreground/50"
-                                        />
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        size="lg"
-                                        className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors duration-300"
-                                    >
-                                        {submitted ? (
-                                            <CheckCircle className="mr-2" />
-                                        ) : (
-                                            <PhoneCall className="mr-2" />
-                                        )}
-                                        {submitted
-                                            ? "Demo Call Scheduled!"
-                                            : "Schedule Your Demo"}
-                                    </Button>
-                                </form>
-                            )}
+                            </div>
 
                             <p className="mt-6 text-sm text-center text-primary-foreground/70">
                                 Experience the future of customer support. No
