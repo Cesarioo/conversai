@@ -4,11 +4,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
     ChevronDown,
-    Utensils,
-    Building,
-    ShoppingBag,
-    Stethoscope,
-    PiggyBank,
     ArrowUpRight,
     type LucideIcon,
 } from "lucide-react";
@@ -27,46 +22,6 @@ type NavigationItem = {
 };
 
 const navigationItems: NavigationItem[] = [
-    {
-        title: "Use Cases",
-        items: [
-            {
-                icon: Utensils,
-                title: "Restaurant",
-                description: "Let the agent handle reservations and inquiries",
-                href: "/restaurants",
-            },
-            {
-                icon: Building,
-                title: "Hotel",
-                description: "Manage bookings and guest services efficiently",
-                href: "#hotel",
-            },
-            {
-                icon: ShoppingBag,
-                title: "E-commerce",
-                description:
-                    "Provide 24/7 customer support for online shoppers",
-                href: "#ecommerce",
-            },
-            {
-                icon: Stethoscope,
-                title: "Healthcare",
-                description: "Schedule appointments and answer patient queries",
-                href: "/medical-clinics",
-            },
-            {
-                icon: PiggyBank,
-                title: "Finance",
-                description: "Assist with account inquiries and transactions",
-                href: "#finance",
-            },
-        ],
-    },
-    {
-        title: "Pricing",
-        href: "#pricing",
-    },
 ];
 
 export function Navbar() {
@@ -234,7 +189,6 @@ export function Navbar() {
                     </div>
                     <div className="flex items-center space-x-4">
                         <Button variant="ghost">Launch the App</Button>
-                        <Button>Test an Agent</Button>
                     </div>
                 </div>
             </div>
