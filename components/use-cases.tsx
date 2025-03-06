@@ -6,9 +6,7 @@ import {
     HeadphonesIcon,
     UserCircle2,
     Stethoscope,
-    ArrowRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 const useCases = [
@@ -87,18 +85,6 @@ export function UseCases() {
                                 <p className="text-white text-opacity-90 mb-4 flex-grow">
                                     {useCase.description}
                                 </p>
-                                <Button
-                                    variant="secondary"
-                                    className="self-start group mt-auto bg-white/90 text-gray-800 hover:bg-white"
-                                >
-                                    <Link
-                                        href={useCase.url}
-                                        className="flex items-center"
-                                    >
-                                        Learn More
-                                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </Link>
-                                </Button>
                             </div>
                         </motion.div>
                     ))}
@@ -109,12 +95,6 @@ export function UseCases() {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     className="text-center"
                 >
-                    <Button
-                        size="lg"
-                        className="bg-primary text-white hover:bg-primary/90"
-                    >
-                        Explore More Industries
-                    </Button>
                 </motion.div>
             </div>
         </section>
