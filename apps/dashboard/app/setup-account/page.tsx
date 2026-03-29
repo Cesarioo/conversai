@@ -1,0 +1,198 @@
+"use client"
+
+import { Suspense } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from 'sonner'
+
+function SetupAccountForm() {
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState<string | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const getUser = async () => {
+      const accessToken = searchParams.get('access_token')
+      
+      try {
+        // First try to get the user directly from the access token
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          }
+        })
+
+        if (response.ok) {
+          const userData = await response.json()
+          if (userData.email) {
+            setEmail(userData.email)
+          }
+        } else {
+          console.error('Failed to get user data')
+        }
+      } catch (error) {
+        console.error('Error getting user:', error)
+      }
+    }
+
+    if (searchParams.get('access_token')) {
+      getUser()
+    }
+  }, [searchParams])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters')
+      return
+    }
+    
+    setLoading(true)
+    try {
+      const accessToken = searchParams.get('access_token')
+      if (!accessToken) {
+        throw new Error('No access token found')
+      }
+
+      // First update the password
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        },
+        body: JSON.stringify({
+          password: password
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update password')
+      }
+
+      // Then update the app_users table
+      const updateAppUserResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/app_users`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          updated_password: true
+        })
+      })
+
+      if (!updateAppUserResponse.ok) {
+        console.error('Failed to update app_users table')
+      }
+
+      toast.success('Password updated successfully')
+      router.push('/login?onBoarding=true')
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error updating password')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="container max-w-lg mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Setup your account</CardTitle>
+          <CardDescription>
+            Please set a password for your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email || ''}
+                disabled
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Setting up...' : 'Complete Setup'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Loading component
+function LoadingState() {
+  return (
+    <div className="container max-w-lg mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading...</CardTitle>
+          <CardDescription>
+            Please wait while we load your account setup
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Main component with Suspense
+export default function SetupAccount() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <SetupAccountForm />
+    </Suspense>
+  )
+} 
